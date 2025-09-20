@@ -54,27 +54,28 @@ if num_parcelas <= 0:
 # --- Cálculos ---
 
 # Opção 1: Pagamento à Vista
-custo_vista = valor_produto * (1 - desconto_vista / 100)
+custo_vista_bruto = valor_produto * (1 - desconto_vista / 100)
+valor_desconto = valor_produto - custo_vista_bruto
+rendimento_desconto = valor_desconto * ((1 + taxa_rendimento_mensal / 100) ** num_parcelas - 1)
+custo_vista_liquido = custo_vista_bruto - rendimento_desconto
 
 # Opção 2: Pagamento Parcelado
 valor_parcela = valor_produto / num_parcelas
-rendimento_total = 0.0
+rendimento_total_parcelado = 0.0
 rendimentos_por_mes = []
 saldo_por_mes = []
 
 saldo_atual = valor_produto
 
 for mes in range(1, num_parcelas + 1):
-    # Cálculo do rendimento sobre o saldo inicial do mês
     rendimento_mes = saldo_atual * (taxa_rendimento_mensal / 100)
-    rendimento_total += rendimento_mes
-    rendimentos_por_mes.append(rendimento_total)
+    rendimento_total_parcelado += rendimento_mes
+    rendimentos_por_mes.append(rendimento_total_parcelado)
 
-    # Abate a parcela do saldo
     saldo_atual = saldo_atual + rendimento_mes - valor_parcela
     saldo_por_mes.append(saldo_atual)
 
-custo_parcelado_liquido = valor_produto - rendimento_total
+custo_parcelado_liquido = valor_produto - rendimento_total_parcelado
 
 # --- Resultados e Visualização ---
 
@@ -86,26 +87,34 @@ col_vista, col_parcelado = st.columns(2)
 with col_vista:
     st.metric(
         label="💰 Custo à Vista (com desconto)",
-        value=f"R$ {custo_vista:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        value=f"R$ {custo_vista_bruto:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
     )
-    st.success(f"**Economia:** R$ {valor_produto - custo_vista:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+    st.info(f"**Rendimento do Desconto:** R$ {rendimento_desconto:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+    st.metric(
+        label="✅ Custo Líquido Final",
+        value=f"R$ {custo_vista_liquido:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    )
 
 with col_parcelado:
     st.metric(
         label="📈 Rendimentos no Período",
-        value=f"R$ {rendimento_total:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        value=f"R$ {rendimento_total_parcelado:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
     )
-    st.info(f"**Custo Líquido:** R$ {custo_parcelado_liquido:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+    st.info(f"**Custo da Compra:** R$ {valor_produto:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+    st.metric(
+        label="✅ Custo Líquido Final",
+        value=f"R$ {custo_parcelado_liquido:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    )
 
 # Comparativo final
 st.markdown("---")
-if custo_vista < custo_parcelado_liquido:
-    diferenca = custo_parcelado_liquido - custo_vista
+if custo_vista_liquido < custo_parcelado_liquido:
+    diferenca = custo_parcelado_liquido - custo_vista_liquido
     st.success(
         f"🎉 **Comprar à vista é a melhor opção!** Você economiza R$ {diferenca:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
     )
-elif custo_parcelado_liquido < custo_vista:
-    diferenca = custo_vista - custo_parcelado_liquido
+elif custo_parcelado_liquido < custo_vista_liquido:
+    diferenca = custo_vista_liquido - custo_parcelado_liquido
     st.success(
         f"🚀 **Comprar parcelado é a melhor opção!** Você economiza R$ {diferenca:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
     )
@@ -113,7 +122,7 @@ else:
     st.info("As duas opções têm o mesmo custo líquido. A escolha é sua!")
 
 # Gráfico de rendimentos
-st.subheader("Gráfico de Acumulação de Rendimentos")
+st.subheader("Gráfico de Acumulação de Rendimentos (Opção Parcelada)")
 df_grafico = pd.DataFrame({
     'Mês': list(range(1, num_parcelas + 1)),
     'Rendimento Acumulado': rendimentos_por_mes
