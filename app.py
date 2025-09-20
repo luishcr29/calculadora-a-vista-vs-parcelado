@@ -91,7 +91,6 @@ with col_vista:
         value=f"R$ {custo_vista_bruto:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
     )
     st.info(f"**Rendimento do Desconto:** R$ {rendimento_desconto:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
-    st.info(f"**Saldo no Final do Período:** R$ {valor_desconto + rendimento_desconto:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
     st.metric(
         label="✅ Custo Líquido Final",
         value=f"R$ {custo_vista_liquido:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
@@ -99,11 +98,10 @@ with col_vista:
 
 with col_parcelado:
     st.metric(
-        label="💰 Custo Parcelado (sem desconto)",
-        value=f"R$ {valor_produto:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        label="📈 Rendimentos no Período",
+        value=f"R$ {rendimento_total_parcelado:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
     )
-    st.info(f"**Rendimento do Parcelamento:** R$ {rendimento_total_parcelado:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
-    st.info(f"**Saldo no Final do Período:** R$ {rendimento_total_parcelado:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+    st.info(f"**Custo da Compra:** R$ {valor_produto:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
     st.metric(
         label="✅ Custo Líquido Final",
         value=f"R$ {custo_parcelado_liquido:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
@@ -124,17 +122,32 @@ elif custo_parcelado_liquido < custo_vista_liquido:
 else:
     st.info("As duas opções têm o mesmo custo líquido. A escolha é sua!")
 
-# Gráfico com Plotly
-st.subheader("Gráfico de Acumulação de Rendimentos (Opção Parcelada)")
+# --- Gráfico com Plotly (agora com duas curvas) ---
+st.subheader("Gráfico de Acumulação de Rendimentos por Opção")
+
+# Criar a série de rendimentos para a opção à vista
+rendimentos_vista_acumulados = [
+    valor_desconto * ((1 + taxa_rendimento_mensal / 100) ** mes - 1)
+    for mes in range(1, num_parcelas + 1)
+]
+
+# Unir os dados em um único DataFrame para o gráfico
 df_grafico = pd.DataFrame({
-    'Mês': list(range(1, num_parcelas + 1)),
-    'Rendimento Acumulado': rendimentos_por_mes
+    'Mês': list(range(1, num_parcelas + 1)) * 2,
+    'Rendimento Acumulado': rendimentos_por_mes + rendimentos_vista_acumulados,
+    'Opção': ['Parcelado'] * num_parcelas + ['À Vista'] * num_parcelas
 })
 
-fig = px.line(df_grafico, x='Mês', y='Rendimento Acumulado', 
-              title='Evolução dos Rendimentos',
-              labels={'Rendimento Acumulado': 'Rendimento Acumulado (R$)'},
-              markers=True)
+fig = px.line(
+    df_grafico,
+    x='Mês',
+    y='Rendimento Acumulado',
+    color='Opção',
+    title='Comparativo de Rendimento ao Longo do Tempo',
+    labels={'Rendimento Acumulado': 'Rendimento Acumulado (R$)'},
+    markers=True
+)
+
 fig.update_layout(hovermode="x unified")
 st.plotly_chart(fig, use_container_width=True)
 
