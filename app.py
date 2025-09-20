@@ -2,7 +2,6 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 import plotly.express as px
 
 # Configuração da página
@@ -57,7 +56,13 @@ if num_parcelas <= 0:
 # Opção 1: Pagamento à Vista
 custo_vista_bruto = valor_produto * (1 - desconto_vista / 100)
 valor_desconto = valor_produto - custo_vista_bruto
-rendimento_desconto = valor_desconto * ((1 + taxa_rendimento_mensal / 100) ** num_parcelas - 1)
+rendimento_desconto_meses = []
+saldo_desconto = valor_desconto
+for mes in range(1, num_parcelas + 1):
+    rendimento_mes = saldo_desconto * (taxa_rendimento_mensal / 100)
+    saldo_desconto += rendimento_mes
+    rendimento_desconto_meses.append(saldo_desconto - valor_desconto)
+rendimento_desconto = saldo_desconto - valor_desconto
 custo_vista_liquido = custo_vista_bruto - rendimento_desconto
 
 # Opção 2: Pagamento Parcelado
@@ -122,32 +127,27 @@ elif custo_parcelado_liquido < custo_vista_liquido:
 else:
     st.info("As duas opções têm o mesmo custo líquido. A escolha é sua!")
 
-# --- Gráfico com Plotly (agora com duas curvas) ---
-st.subheader("Gráfico de Acumulação de Rendimentos por Opção")
+# Gráfico com Plotly
+st.subheader("Gráfico de Comparativo de Rendimentos")
 
-# Criar a série de rendimentos para a opção à vista
-rendimentos_vista_acumulados = [
-    valor_desconto * ((1 + taxa_rendimento_mensal / 100) ** mes - 1)
-    for mes in range(1, num_parcelas + 1)
-]
-
-# Unir os dados em um único DataFrame para o gráfico
-df_grafico = pd.DataFrame({
-    'Mês': list(range(1, num_parcelas + 1)) * 2,
-    'Rendimento Acumulado': rendimentos_por_mes + rendimentos_vista_acumulados,
-    'Opção': ['Parcelado'] * num_parcelas + ['À Vista'] * num_parcelas
+df_parcelado = pd.DataFrame({
+    'Mês': list(range(1, num_parcelas + 1)),
+    'Rendimento Acumulado': rendimentos_por_mes,
+    'Opção': 'Parcelado'
 })
 
-fig = px.line(
-    df_grafico,
-    x='Mês',
-    y='Rendimento Acumulado',
-    color='Opção',
-    title='Comparativo de Rendimento ao Longo do Tempo',
-    labels={'Rendimento Acumulado': 'Rendimento Acumulado (R$)'},
-    markers=True
-)
+df_avista = pd.DataFrame({
+    'Mês': list(range(1, num_parcelas + 1)),
+    'Rendimento Acumulado': rendimento_desconto_meses,
+    'Opção': 'À Vista'
+})
 
+df_final = pd.concat([df_parcelado, df_avista])
+
+fig = px.line(df_final, x='Mês', y='Rendimento Acumulado', color='Opção',
+              title='Evolução dos Rendimentos em Ambas as Opções',
+              labels={'Rendimento Acumulado': 'Rendimento Acumulado (R$)'},
+              markers=True)
 fig.update_layout(hovermode="x unified")
 st.plotly_chart(fig, use_container_width=True)
 
