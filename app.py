@@ -97,14 +97,15 @@ with col_vista:
 
 with col_parcelado:
     st.metric(
-        label="📈 Rendimentos no Período",
-        value=f"R$ {rendimento_total_parcelado:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        label="💰 Custo Parcelado (sem desconto)",
+        value=f"R$ {valor_produto:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
     )
-    st.info(f"**Custo da Compra:** R$ {valor_produto:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+    st.info(f"**Rendimento do Parcelamento:** R$ {rendimento_total_parcelado:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
     st.metric(
         label="✅ Custo Líquido Final",
         value=f"R$ {custo_parcelado_liquido:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
     )
+
 
 # Comparativo final
 st.markdown("---")
