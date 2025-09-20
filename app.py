@@ -61,7 +61,8 @@ saldo_desconto = valor_desconto
 for mes in range(1, num_parcelas + 1):
     rendimento_mes = saldo_desconto * (taxa_rendimento_mensal / 100)
     saldo_desconto += rendimento_mes
-    rendimento_desconto_meses.append(saldo_desconto - valor_desconto)
+    # rendimento_desconto_meses.append(saldo_desconto - valor_desconto)
+    rendimento_desconto_meses.append(saldo_desconto)
 rendimento_desconto = saldo_desconto - valor_desconto
 custo_vista_liquido = custo_vista_bruto - rendimento_desconto
 
