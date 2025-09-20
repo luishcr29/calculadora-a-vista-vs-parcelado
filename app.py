@@ -3,6 +3,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import plotly.express as px
 
 # Configuração da página
 st.set_page_config(page_title="Calculadora: À Vista vs. Parcelado", layout="wide")
@@ -108,7 +109,6 @@ with col_parcelado:
         value=f"R$ {custo_parcelado_liquido:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
     )
 
-
 # Comparativo final
 st.markdown("---")
 if custo_vista_liquido < custo_parcelado_liquido:
@@ -124,14 +124,20 @@ elif custo_parcelado_liquido < custo_vista_liquido:
 else:
     st.info("As duas opções têm o mesmo custo líquido. A escolha é sua!")
 
-# Gráfico de rendimentos
+# Gráfico com Plotly
 st.subheader("Gráfico de Acumulação de Rendimentos (Opção Parcelada)")
 df_grafico = pd.DataFrame({
     'Mês': list(range(1, num_parcelas + 1)),
     'Rendimento Acumulado': rendimentos_por_mes
 })
 
-st.line_chart(df_grafico.set_index('Mês'))
+fig = px.line(df_grafico, x='Mês', y='Rendimento Acumulado', 
+              title='Evolução dos Rendimentos',
+              labels={'Rendimento Acumulado': 'Rendimento Acumulado (R$)'},
+              markers=True)
+fig.update_layout(hovermode="x unified")
+st.plotly_chart(fig, use_container_width=True)
+
 
 # Tabela de detalhes
 with st.expander("🧾 Detalhes do Cálculo"):
