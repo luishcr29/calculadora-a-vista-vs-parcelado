@@ -97,6 +97,7 @@ with col_vista:
         value=f"R$ {custo_vista_bruto:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
     )
     st.info(f"**Rendimento do Desconto:** R$ {rendimento_desconto:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+    st.info(f"**Saldo no Final do Período:** R$ {valor_desconto + rendimento_desconto:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
     st.metric(
         label="✅ Custo Líquido Final",
         value=f"R$ {custo_vista_liquido:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
@@ -104,10 +105,11 @@ with col_vista:
 
 with col_parcelado:
     st.metric(
-        label="📈 Rendimentos no Período",
-        value=f"R$ {rendimento_total_parcelado:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        label="💰 Custo Parcelado (sem desconto)",
+        value=f"R$ {valor_produto:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
     )
-    st.info(f"**Custo da Compra:** R$ {valor_produto:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+    st.info(f"**Rendimento do Parcelamento:** R$ {rendimento_total_parcelado:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+    st.info(f"**Saldo no Final do Período:** R$ {rendimento_total_parcelado:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
     st.metric(
         label="✅ Custo Líquido Final",
         value=f"R$ {custo_parcelado_liquido:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
