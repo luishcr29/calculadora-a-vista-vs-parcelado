@@ -18,31 +18,31 @@ col1, col2 = st.columns(2)
 
 with col1:
     valor_produto = st.number_input(
-        "💵 Valor total do produto (R$)", 
-        min_value=100.0, 
-        value=1000.0, 
+        "💵 Valor total do produto (R$)",
+        min_value=100.0,
+        value=1000.0,
         step=100.0
     )
     desconto_vista = st.number_input(
-        "🏷️ Desconto para pagamento à vista (%)", 
-        min_value=0.0, 
-        value=5.0, 
+        "🏷️ Desconto para pagamento à vista (%)",
+        min_value=0.0,
+        value=3.0,
         step=0.5,
         format="%.2f"
     )
 
 with col2:
     taxa_rendimento_mensal = st.number_input(
-        "📈 Taxa de rendimento do investimento (% ao mês)", 
-        min_value=0.0, 
-        value=1.0, 
+        "📈 Taxa de rendimento do investimento (% ao mês)",
+        min_value=0.0,
+        value=1.0,
         step=0.1,
         format="%.2f"
     )
     num_parcelas = st.number_input(
-        "🗓️ Número de parcelas", 
-        min_value=1, 
-        value=10, 
+        "🗓️ Número de parcelas",
+        min_value=1,
+        value=2,
         step=1
     )
 
@@ -63,16 +63,16 @@ rendimentos_por_mes = []
 saldo_por_mes = []
 
 saldo_atual = valor_produto
+
 for mes in range(1, num_parcelas + 1):
-    # O rendimento é sobre o saldo que ainda não foi gasto na parcela
+    # Cálculo do rendimento sobre o saldo inicial do mês
     rendimento_mes = saldo_atual * (taxa_rendimento_mensal / 100)
     rendimento_total += rendimento_mes
     rendimentos_por_mes.append(rendimento_total)
 
-    saldo_por_mes.append(saldo_atual)
-
     # Abate a parcela do saldo
     saldo_atual -= valor_parcela
+    saldo_por_mes.append(saldo_atual)
 
 custo_parcelado_liquido = valor_produto - rendimento_total
 
@@ -129,7 +129,7 @@ with st.expander("🧾 Detalhes do Cálculo"):
         saldo_inicial = saldo_calc
         rendimento = saldo_inicial * (taxa_rendimento_mensal / 100)
         saldo_final = saldo_inicial + rendimento - valor_parcela
-        
+
         detalhes_df.loc[mes] = [
             mes,
             f"R$ {saldo_inicial:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."),
